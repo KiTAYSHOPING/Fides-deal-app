@@ -260,8 +260,9 @@
         .swipe-container {
             flex: 1;
             position: relative;
-            overflow: hidden;
+            overflow: visible; /* ИЗМЕНЕНО: было hidden */
             width: 100%;
+            touch-action: pan-y pinch-zoom; /* ДОБАВЛЕНО */
         }
         
         .sections-wrapper {
@@ -274,12 +275,14 @@
         
         .content-section {
             width: 20%;
-            height: 100%;
+            height: auto; /* ИЗМЕНЕНО: было 100% */
             padding: 20px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             position: relative;
+            max-height: calc(100vh - 350px); /* ДОБАВЛЕНО */
+            min-height: 400px; /* ДОБАВЛЕНО */
         }
         
         /* === СТАТИСТИКА === */
@@ -919,6 +922,28 @@
             
             .content-section {
                 padding: 15px;
+                max-height: calc(100vh - 320px); /* ДОБАВЛЕНО */
+                min-height: 350px; /* ДОБАВЛЕНО */
+            }
+        }
+        
+        /* ========== ФИКС ВЕРТИКАЛЬНОГО СКРОЛЛА ========== */
+        .swipe-container {
+            touch-action: pan-y pinch-zoom;
+            overflow: visible !important;
+        }
+        
+        .content-section {
+            overscroll-behavior: contain !important;
+            -webkit-overflow-scrolling: touch !important;
+            overflow-y: auto !important;
+            scroll-behavior: smooth;
+        }
+        
+        /* Фикс для свайпа на мобильных */
+        @media (hover: none) and (pointer: coarse) {
+            .content-section {
+                -webkit-overflow-scrolling: touch;
             }
         }
     </style>
@@ -1381,6 +1406,9 @@
         let animationID = null;
         let velocity = 0;
         let isInitialized = false;
+        let touchStartY = 0;
+        let touchStartX = 0;
+        let isVerticalScroll = false;
         
         // ==================== ИНИЦИАЛИЗАЦИЯ ====================
         document.addEventListener('DOMContentLoaded', function() {
@@ -1394,6 +1422,7 @@
                 initFAQ();
                 initSwipeNavigation();
                 updateNavButtons();
+                fixVerticalScroll();
             }
         });
         
@@ -1424,6 +1453,51 @@
                     }, 500);
                 }
             }, 1500);
+        }
+        
+        // ==================== ФИКС ВЕРТИКАЛЬНОГО СКРОЛЛА ====================
+        function fixVerticalScroll() {
+            const swipeContainer = document.getElementById('swipeContainer');
+            const sections = document.querySelectorAll('.content-section');
+            
+            if (!swipeContainer) return;
+            
+            // Устанавливаем правильные стили
+            swipeContainer.style.overflow = 'visible';
+            swipeContainer.style.touchAction = 'pan-y pinch-zoom';
+            
+            sections.forEach(section => {
+                section.style.overflowY = 'auto';
+                section.style.webkitOverflowScrolling = 'touch';
+                section.style.height = 'auto';
+                section.style.maxHeight = 'calc(100vh - 350px)';
+                section.style.minHeight = '400px';
+            });
+            
+            // Улучшенная логика для определения направления свайпа
+            swipeContainer.addEventListener('touchstart', function(e) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                isVerticalScroll = false;
+                isSwiping = false;
+            }, { passive: true });
+            
+            swipeContainer.addEventListener('touchmove', function(e) {
+                if (!touchStartX || !touchStartY) return;
+                
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const diffX = Math.abs(currentX - touchStartX);
+                const diffY = Math.abs(currentY - touchStartY);
+                
+                // Определяем направление
+                if (diffY > diffX && diffY > 10) {
+                    isVerticalScroll = true;
+                } else if (diffX > diffY && diffX > 10) {
+                    isSwiping = true;
+                    isVerticalScroll = false;
+                }
+            }, { passive: true });
         }
         
         // ==================== FAQ ИНИЦИАЛИЗАЦИЯ ====================
@@ -1501,19 +1575,15 @@
             swipeContainer.addEventListener('mouseup', mouseEnd);
             swipeContainer.addEventListener('mouseleave', mouseEnd);
             
-            // Предотвращаем вертикальный скролл во время горизонтального свайпа
-            swipeContainer.addEventListener('touchmove', (e) => {
-                if (isSwiping) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
             // Анимация
             window.addEventListener('resize', setSliderPosition);
             setSliderPosition();
         }
         
         function touchStart(e) {
+            // Если вертикальный скролл - не начинаем свайп
+            if (isVerticalScroll) return;
+            
             isSwiping = true;
             startX = e.touches[0].clientX;
             prevTranslate = currentTranslate;
@@ -1522,7 +1592,8 @@
         }
         
         function touchMove(e) {
-            if (!isSwiping) return;
+            if (!isSwiping || isVerticalScroll) return;
+            
             const currentX = e.touches[0].clientX;
             const diff = currentX - startX;
             velocity = diff - (currentTranslate - prevTranslate);
@@ -1531,8 +1602,14 @@
         }
         
         function touchEnd() {
-            if (!isSwiping) return;
+            if (!isSwiping || isVerticalScroll) {
+                isSwiping = false;
+                isVerticalScroll = false;
+                return;
+            }
+            
             isSwiping = false;
+            isVerticalScroll = false;
             
             const containerWidth = document.getElementById('swipeContainer').offsetWidth;
             const threshold = containerWidth * 0.15;
@@ -1932,15 +2009,6 @@
                     navigateToNextSection();
                 }
             });
-            
-            // Предотвращаем вертикальный скролл при горизонтальном свайпе
-            let touchStartY = 0;
-            let touchStartX = 0;
-            
-            document.addEventListener('touchstart', (e) => {
-                touchStartY = e.touches[0].clientY;
-                touchStartX = e.touches[0].clientX;
-            }, { passive: true });
         }
         
         function showAlert(message, type) {
@@ -2025,6 +2093,30 @@
             70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
             100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
         }
+        
+        /* Дополнительные фиксы для скролла */
+        .content-section {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-green) transparent;
+        }
+        
+        .content-section::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        
+        .content-section::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .content-section::-webkit-scrollbar-thumb {
+            background: var(--accent-green);
+            border-radius: 10px;
+        }
+        
+        .content-section::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
     </style>
 </body>
-  </html>
+</html>
