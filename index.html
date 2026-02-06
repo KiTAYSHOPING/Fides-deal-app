@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fides Deal • Мини-приложение</title>
+    
+    <!-- ВЕСЬ CSS -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --accent-blue: #2b6be2;
+            --accent-green: #00ff88;
+            --accent-cyan: #00ffcc;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0d0;
+            --border-color: rgba(0, 255, 136, 0.3);
+            --success: #00ff88;
+            --error: #ff5555;
+            --warning: #ffaa00;
+            --info: #00aaff;
+        }
+        
+        /* Светлая тема */
+        body.light-theme {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f7;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a24;
+            --text-secondary: #666680;
+            --border-color: rgba(0, 255, 136, 0.2);
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+            overscroll-behavior: none;
+        }
+        
+        /* === ОСНОВНОЙ КОНТЕЙНЕР === */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 0;
+            background: var(--bg-primary);
+            opacity: 0;
+            transition: opacity 0.5s;
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .app-container.show {
+            opacity: 1;
+        }
+        
+        /* === ЭКРАН ЗАГРУЗКИ === */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--accent-green);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* === HEADER === */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        
+        .close-btn, .menu-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .close-btn:hover, .menu-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+        }
+        
+        .header-title {
+            flex-grow: 1;
+            text-align: center;
+            margin: 0 10px;
+        }
+        
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        /* === HERO SECTION === */
+        .hero-section {
+            padding: 30px 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .logo-circle {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 15px;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+        }
+        
+        .logo-circle i {
+            font-size: 32px;
+            color: white;
+        }
+        
+        .app-title {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            align-items: center;
+        }
+        
+        .title-glow {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+            line-height: 1;
+        }
+        
+        .title-market {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--accent-green), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            margin-top: -5px;
+            line-height: 1;
+        }
+        
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            letter-spacing: 3px;
+            margin-top: 5px;
+        }
+        
+        /* === НАВИГАЦИЯ === */
+        .navigation {
+            display: flex;
+            justify-content: space-around;
+            padding: 0 20px 20px;
+            margin: 0;
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-secondary);
+            padding: 10px 5px;
+            border-radius: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            min-width: 55px;
+            transition: all 0.3s;
+            flex: 1;
+        }
+        
+        .nav-btn.active {
+            color: var(--accent-green);
+            background: rgba(0, 255, 136, 0.15);
+        }
+        
+        .nav-btn i {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+        
+        .nav-btn.active i {
+            color: var(--accent-green);
+        }
+        
+        .nav-btn span {
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        /* === СВАЙП КОНТЕЙНЕР === */
+        .swipe-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .sections-wrapper {
+            display: flex;
+            width: 500%;
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+        
+        .content-section {
+            width: 20%;
+            height: 100%;
+            padding: 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            position: relative;
+        }
+        
+        /* === СТАТИСТИКА === */
+        .stats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .stats-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 12px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-green);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        /* === ОНЛАЙН ВИДЖЕТ === */
+        .online-widget {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .online-count {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            margin: 10px 0 5px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .online-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+        
+        .online-timer {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+        
+        /* === КНОПКИ === */
+        .btn-market {
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            border: none;
+            border-radius: 15px;
+            color: white;
+            padding: 16px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px auto;
+            min-width: 250px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+            animation: neon-pulse 2s infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-market:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.6);
+        }
+        
+        @keyframes neon-pulse {
+            0%, 100% {
+                box-shadow: 0 0 10px rgba(0, 255, 136, 0.5),
+                           0 0 20px rgba(0, 255, 136, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 15px rgba(0, 255, 136, 0.8),
+                           0 0 30px rgba(0, 255, 136, 0.5);
+            }
+        }
+        
+        /* === ПРОФИЛЬ === */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .avatar-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+        }
+        
+        .avatar-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .profile-info h2 {
+            color: var(--text-primary);
+            margin-bottom: 5px;
+            font-size: 20px;
+        }
+        
+        .profile-info .user-id {
+            color: var(--text-secondary);
+            font-size: 14px;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 3px 10px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        /* === КАРТОЧКИ ПРОФИЛЯ === */
+        .profile-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .profile-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .card-icon i {
+            color: var(--accent-green);
+            font-size: 24px;
+        }
+        
+        .card-title {
+            color: var(--text-primary);
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* === ИНФО ПРОФИЛЯ === */
+        .profile-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .info-item {
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .info-icon i {
+            color: var(--accent-green);
+            font-size: 16px;
+        }
+        
+        .info-content {
+            flex-grow: 1;
+            min-width: 0;
+        }
+        
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 11px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .info-value {
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* === ТОГГЛ СВИТЧ === */
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-container:hover {
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .toggle-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .toggle-left i {
+            color: var(--accent-green);
+            flex-shrink: 0;
+        }
+        
+        .toggle-left span {
+            color: var(--text-primary);
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .toggle-switch {
+            width: 50px;
+            height: 24px;
+            background: rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .toggle-switch.active {
+            background: var(--accent-green);
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            left: 29px;
+        }
+        
+        /* === РАЗДЕЛ ФУНКЦИЙ === */
+        .functions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .function-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .function-card:hover {
+            border-color: var(--accent-green);
+        }
+        
+        .function-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .function-icon i {
+            font-size: 28px;
+            color: white;
+        }
+        
+        .function-title {
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .function-desc {
+            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        /* === МЕНЮ С ТРОЕТОЧИЕМ === */
+        .dropdown-menu {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 10px;
+            min-width: 180px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            display: none;
+        }
+        
+        .dropdown-menu.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(0, 255, 136, 0.2);
+        }
+        
+        .dropdown-item i {
+            color: var(--accent-green);
+            width: 20px;
+            flex-shrink: 0;
+        }
+        
+        /* === СПОНСОРЫ === */
+        .sponsor-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 20px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s;
+        }
+        
+        .sponsor-card:hover {
+            border-color: var(--accent-green);
+        }
+        
+        .sponsor-badge {
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        /* === FAQ === */
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+        
+        .faq-item:hover {
+            border-color: var(--accent-green);
+        }
+        
+        .faq-item.active {
+            border-color: var(--accent-green);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+        }
+        
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 20px;
+        }
+        
+        .faq-question h3 {
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 600;
+            flex: 1;
+            margin-right: 15px;
+            transition: color 0.3s;
+        }
+        
+        .faq-item.active .faq-question h3 {
+            color: var(--accent-green);
+        }
+        
+        .faq-icon {
+            color: var(--accent-green);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            min-width: 20px;
+            flex-shrink: 0;
+        }
+        
+        .faq-answer {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.5;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            padding: 0 20px;
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 20px 18px;
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        /* === ФУТЕР === */
+        .footer {
+            padding: 25px 20px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .footer-logo i {
+            color: var(--accent-green);
+            font-size: 24px;
+        }
+        
+        .footer-logo span {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* === СЕКЦИИ ЗАГОЛОВКИ === */
+        .section-title {
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-size: 22px;
+        }
+        
+        .section-title-gradient {
+            background: linear-gradient(45deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        
+        /* === SCROLLBAR === */
+        .content-section::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .content-section::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .content-section::-webkit-scrollbar-thumb {
+            background: var(--accent-green);
+            border-radius: 2px;
+        }
+        
+        /* === АДАПТИВНОСТЬ === */
+        @media (max-width: 480px) {
+            .app-container {
+                max-width: 100%;
+                margin: 0 auto;
+            }
+            
+            .stats-grid, .profile-info-grid, .functions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .title-glow {
+                font-size: 32px;
+            }
+            
+            .title-market {
+                font-size: 22px;
+                margin-top: -3px;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .navigation {
+                padding: 0 10px 15px;
+            }
+            
+            .nav-btn {
+                min-width: 50px;
+                padding: 8px 3px;
+            }
+            
+            .nav-btn i {
+                font-size: 18px;
+            }
+            
+            .nav-btn span {
+                font-size: 10px;
+            }
+            
+            .content-section {
+                padding: 15px;
+            }
+        }
+    </style>
+    
+    <!-- FontAwesome иконки -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body class="dark-theme">
+    <!-- Экран загрузки -->
+    <div id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div style="color: var(--accent-green); font-weight: bold; font-size: 18px;">FIDES DEAL</div>
+        <div style="color: var(--text-secondary); margin-top: 10px; font-size: 14px;">Загрузка данных...</div>
+    </div>
+    
+    <!-- Меню с троеточием -->
+    <div class="dropdown-menu" id="dropdownMenu">
+        <div class="dropdown-item" onclick="refreshPage()">
+            <i class="fas fa-sync-alt"></i>
+            <span>Обновить страницу</span>
+        </div>
+        
+        <div class="dropdown-item" onclick="openBot()">
+            <i class="fas fa-robot"></i>
+            <span>Открыть бота</span>
+        </div>
+        
+        <div class="dropdown-item" onclick="openChannel()">
+            <i class="fas fa-newspaper"></i>
+            <span>Наш канал</span>
+        </div>
+        
+        <div class="dropdown-item" onclick="openSupport()">
+            <i class="fas fa-headset"></i>
+            <span>Поддержка</span>
+        </div>
+    </div>
+    
+    <!-- Основное приложение -->
+    <div class="app-container" id="appContainer">
+        <!-- Header -->
+        <header class="header">
+            <button class="close-btn" onclick="closeApp()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="header-title">
+                <h1 id="pageTitle">Главная</h1>
+            </div>
+            <button class="menu-btn" onclick="toggleDropdown()">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </header>
+        
+        <!-- Герой секция -->
+        <div class="hero-section">
+            <div class="logo-circle">
+                <i class="fas fa-handshake"></i>
+            </div>
+            <h1 class="app-title">
+                <span class="title-glow">FIDES</span>
+                <span class="title-market">DEAL</span>
+                <span class="subtitle">мини-приложение</span>
+            </h1>
+            <p style="color: var(--text-secondary); margin-top: 10px; font-size: 14px;">
+                Платформа для безопасных и надежных сделок
+            </p>
+        </div>
+        
+        <!-- Навигация (5 РАЗДЕЛОВ) -->
+        <nav class="navigation">
+            <button class="nav-btn active" onclick="showSection('stats')" data-section="stats">
+                <i class="fas fa-chart-line"></i>
+                <span>Статистика</span>
+            </button>
+            <button class="nav-btn" onclick="showSection('functions')" data-section="functions">
+                <i class="fas fa-cogs"></i>
+                <span>Функции</span>
+            </button>
+            <button class="nav-btn" onclick="showSection('sponsors')" data-section="sponsors">
+                <i class="fas fa-crown"></i>
+                <span>Партнеры</span>
+            </button>
+            <button class="nav-btn" onclick="showSection('profile')" data-section="profile">
+                <i class="fas fa-user-circle"></i>
+                <span>Профиль</span>
+            </button>
+            <button class="nav-btn" onclick="showSection('help')" data-section="help">
+                <i class="fas fa-question-circle"></i>
+                <span>Помощь</span>
+            </button>
+        </nav>
+        
+        <!-- Контейнер для свайпа -->
+        <div class="swipe-container" id="swipeContainer">
+            <div class="sections-wrapper" id="sectionsWrapper">
+                <!-- Секция статистики -->
+                <section id="stats-section" class="content-section">
+                    <h2 class="section-title">
+                        <span class="section-title-gradient">FIDES DEAL</span>
+                        <span style="color: var(--text-primary);"> Статистика</span>
+                    </h2>
+                    
+                    <div class="stats-container">
+                        <div class="stats-card">
+                            <div style="color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 18px;">
+                                <i class="fas fa-chart-pie" style="color: var(--accent-green);"></i>
+                                Общая статистика платформы
+                            </div>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-number">76,543</div>
+                                    <div class="stat-label">Всего сделок</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">74,892</div>
+                                    <div class="stat-label">Успешных сделок</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">$720K+</div>
+                                    <div class="stat-label">Общий объем</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-number">4.9/5.0</div>
+                                    <div class="stat-label">Средний рейтинг</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="online-widget">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                                <div class="online-dot"></div>
+                                <h4 style="color: white; margin: 0;">Онлайн сейчас</h4>
+                            </div>
+                            <div class="online-count" id="onlineCount">9,876</div>
+                            <p class="online-subtitle">Активных пользователей</p>
+                            <div class="online-timer" id="onlineTimer">Обновление через: 5:00</div>
+                        </div>
+                        
+                        <!-- ТОЛЬКО ОДНА КНОПКА НА ГЛАВНОЙ -->
+                        <button class="btn-market" onclick="openOTC()">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>FIDES OTC</span>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- Раздел: Функции -->
+                <section id="functions-section" class="content-section">
+                    <h2 class="section-title">
+                        <span class="section-title-gradient">⚙️</span>
+                        <span style="color: var(--text-primary);"> Функции бота</span>
+                    </h2>
+                    
+                    <div class="functions-grid">
+                        <div class="function-card" onclick="openBot()">
+                            <div class="function-icon">
+                                <i class="fas fa-handshake"></i>
+                            </div>
+                            <div>
+                                <div class="function-title">Безопасные сделки</div>
+                                <div class="function-desc">Гарант сделок, защита средств, безопасный обмен</div>
+                            </div>
+                        </div>
+                        
+                        <div class="function-card" onclick="openBot()">
+                            <div class="function-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div>
+                                <div class="function-title">Мультивалютность</div>
+                                <div class="function-desc">RUB, USD, TON, USDT и другие валюты</div>
+                            </div>
+                        </div>
+                        
+                        <div class="function-card" onclick="openBot()">
+                            <div class="function-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div>
+                                <div class="function-title">Гарант услуг</div>
+                                <div class="function-desc">Защита при покупке/продаже услуг и товаров</div>
+                            </div>
+                        </div>
+                        
+                        <div class="function-card" onclick="openBot()">
+                            <div class="function-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <div class="function-title">Статистика</div>
+                                <div class="function-desc">Детальная статистика всех сделок</div>
+                            </div>
+                        </div>
+                        
+                        <div class="function-card" onclick="openBot()">
+                            <div class="function-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <div class="function-title">Реферальная система</div>
+                                <div class="function-desc">Приглашайте друзей и получайте бонусы</div>
+                            </div>
+                        </div>
+                        
+                        <div class="function-card" onclick="openBot()">
+                            <div class="function-icon">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div>
+                                <div class="function-title">Поддержка 24/7</div>
+                                <div class="function-desc">Круглосуточная техническая поддержка</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn-market" onclick="openOTC()">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>FIDES OTC</span>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- Секция партнеров -->
+                <section id="sponsors-section" class="content-section">
+                    <h2 class="section-title">
+                        <span class="section-title-gradient">ПАРТНЕРЫ</span>
+                        <span style="color: var(--text-primary);"> Fides Deal</span>
+                    </h2>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <!-- Партнер 1 -->
+                        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 25px; text-align: center;">
+                            <div style="width: 70px; height: 70px; background: linear-gradient(45deg, var(--accent-blue), var(--accent-green)); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                                <i class="fas fa-star" style="font-size: 32px; color: white;"></i>
+                            </div>
+                            <h3 style="margin: 0 0 10px 0; color: var(--text-primary);">Станьте партнером</h3>
+                            <p style="color: var(--text-secondary); margin-bottom: 20px;">Мы открыты для сотрудничества с проектами в сфере безопасных сделок</p>
+                            <a href="https://t.me/FidesDeal" style="color: var(--accent-green); text-decoration: none; font-weight: bold; display: inline-block; padding: 10px 20px; border: 1px solid var(--accent-green); border-radius: 10px;">
+                                Связаться для партнерства
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn-market" onclick="openOTC()">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>FIDES OTC</span>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- ПРОФИЛЬ -->
+                <section id="profile-section" class="content-section">
+                    <h2 class="section-title">
+                        <span class="section-title-gradient">👤</span>
+                        <span style="color: var(--text-primary);"> Мой профиль</span>
+                    </h2>
+                    
+                    <!-- Заголовок профиля -->
+                    <div class="profile-header">
+                        <div class="avatar-circle" id="userAvatar">
+                            <div class="avatar-placeholder" id="avatarPlaceholder">
+                                <!-- Будет заменено на аватарку Telegram -->
+                            </div>
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="userName">Пользователь</h2>
+                            <div class="user-id" id="userId">ID: 000000</div>
+                            <div style="margin-top: 10px; color: var(--text-secondary); font-size: 14px;" id="userStatus">
+                                <i class="fas fa-circle" style="color: var(--success); font-size: 10px;"></i> 
+                                <span id="statusText">В сети</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Карточка информации -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Информация о профиле</h3>
+                                <p class="card-desc">Ваши данные в Telegram</p>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-info-grid" id="userInfoGrid">
+                            <!-- Информация загрузится динамически -->
+                        </div>
+                    </div>
+                    
+                    <!-- Карточка активности -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Активность в Fides Deal</h3>
+                                <p class="card-desc">Ваше участие в платформе</p>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-info-grid">
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-label">Дней с нами</div>
+                                    <div class="info-value" id="daysWithUs">45</div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-label">Уровень доверия</div>
+                                    <div class="info-value" id="trustLevel">Надежный</div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-globe"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-label">Часовой пояс</div>
+                                    <div class="info-value" id="userTimezone">UTC+3</div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-item">
+                                <div class="info-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-label">Последний визит</div>
+                                    <div class="info-value" id="lastVisit">Только что</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Карточка настроек -->
+                    <div class="profile-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title">Настройки профиля</h3>
+                                <p class="card-desc">Персонализация вашего опыта</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <div class="toggle-container" onclick="toggleTheme()">
+                                <div class="toggle-left">
+                                    <i class="fas fa-moon"></i>
+                                    <span>Темная тема</span>
+                                </div>
+                                <div class="toggle-switch" id="themeToggle">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="toggle-container" onclick="toggleNotifications()">
+                                <div class="toggle-left">
+                                    <i class="fas fa-bell"></i>
+                                    <span>Уведомления</span>
+                                </div>
+                                <div class="toggle-switch active" id="notificationsToggle">
+                                    <div class="toggle-slider"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Кнопки -->
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button class="btn-market" onclick="openOTC()">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>FIDES OTC</span>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- Секция помощи (5-й раздел) -->
+                <section id="help-section" class="content-section">
+                    <h2 class="section-title">
+                        <span class="section-title-gradient">❓</span>
+                        <span style="color: var(--text-primary);"> Помощь</span>
+                    </h2>
+                    
+                    <div class="faq-container" id="faqContainer">
+                        <!-- FAQ будет добавлен динамически -->
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button class="btn-market" onclick="openOTC()">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>FIDES OTC</span>
+                        </button>
+                        
+                        <button class="btn-market" onclick="openSupport()" style="background: linear-gradient(45deg, var(--accent-blue), var(--accent-green)); margin-top: 10px;">
+                            <i class="fas fa-headset"></i>
+                            <span>СВЯЗАТЬСЯ С ПОДДЕРЖКОЙ</span>
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </div>
+        
+        <!-- Футер -->
+        <footer class="footer">
+            <div class="footer-logo">
+                <i class="fas fa-handshake"></i>
+                <span>FIDES DEAL</span>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 14px;">
+                Платформа для безопасных и надежных сделок
+            </p>
+            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+                <a href="https://t.me/FidesNews" target="_blank" style="color: var(--text-secondary); text-decoration: none; font-size: 13px;">Канал</a>
+                <a href="https://t.me/FidesDealBot" target="_blank" style="color: var(--text-secondary); text-decoration: none; font-size: 13px;">Бот</a>
+                <a href="https://t.me/FidesDeal" target="_blank" style="color: var(--text-secondary); text-decoration: none; font-size: 13px;">Поддержка</a>
+            </div>
+            <p style="color: #8888aa; font-size: 12px;">
+                © 2024 Fides Deal. Все права защищены.<br>
+                Версия Mini App: 2.1.0
+            </p>
+        </footer>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+        let telegramUser = null;
+        let onlineInterval = null;
+        let onlineUpdateTimer = 300;
+        let onlineCount = 9876;
+        let isDarkTheme = true;
+        let notificationsEnabled = true;
+        let currentSection = 'stats';
+        let sectionsOrder = ['stats', 'functions', 'sponsors', 'profile', 'help'];
+        let currentSectionIndex = 0;
+        let isSwiping = false;
+        let startX = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
+        let animationID = null;
+        let velocity = 0;
+        let isInitialized = false;
+        
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isInitialized) {
+                isInitialized = true;
+                initTelegramWebApp();
+                setupEventListeners();
+                loadUserProfile();
+                startOnlineCounter();
+                loadProfileData();
+                initFAQ();
+                initSwipeNavigation();
+                updateNavButtons();
+            }
+        });
+        
+        function initTelegramWebApp() {
+            try {
+                if (window.Telegram && Telegram.WebApp) {
+                    Telegram.WebApp.ready();
+                    Telegram.WebApp.expand();
+                    telegramUser = Telegram.WebApp.initDataUnsafe?.user;
+                }
+            } catch (error) {
+                console.log("Telegram Web App не доступен, работаем в демо-режиме");
+            }
+            
+            // Гарантированно скрываем экран загрузки через 1.5 секунды
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    loadingScreen.style.transition = 'opacity 0.5s';
+                    
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        const appContainer = document.getElementById('appContainer');
+                        if (appContainer) {
+                            appContainer.classList.add('show');
+                        }
+                    }, 500);
+                }
+            }, 1500);
+        }
+        
+        // ==================== FAQ ИНИЦИАЛИЗАЦИЯ ====================
+        function initFAQ() {
+            const faqData = [
+                {
+                    question: "Как работает Fides Deal?",
+                    answer: "Fides Deal - это надежная платформа для безопасных сделок между пользователями. Мы выступаем гарантом сделки и защищаем средства до выполнения условий. Платформа обеспечивает полную безопасность и прозрачность всех операций."
+                },
+                {
+                    question: "Как создать сделку?",
+                    answer: "1. Откройте бота @FidesDealBot<br>2. Используйте команду /start<br>3. Следуйте инструкциям<br>4. Подтвердите создание сделки<br>5. Дождитесь подтверждения от контрагента"
+                },
+                {
+                    question: "Что такое Fides OTC?",
+                    answer: "Fides OTC - это внебиржевой рынок для безопасных сделок между пользователями без посредников. Здесь вы можете покупать и продавать активы напрямую с другими участниками по взаимно согласованным ценам."
+                },
+                {
+                    question: "Как получить помощь?",
+                    answer: "Свяжитесь с поддержкой: <a href='https://t.me/FidesDeal' target='_blank'>@FidesDeal</a><br>Или напишите в наш канал: <a href='https://t.me/FidesNews' target='_blank'>@FidesNews</a><br>Поддержка работает 24/7"
+                }
+            ];
+            
+            const faqContainer = document.getElementById('faqContainer');
+            if (faqContainer) {
+                faqContainer.innerHTML = '';
+                
+                faqData.forEach((faq, index) => {
+                    const faqItem = document.createElement('div');
+                    faqItem.className = 'faq-item';
+                    faqItem.innerHTML = `
+                        <div class="faq-question">
+                            <h3>${faq.question}</h3>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <p>${faq.answer}</p>
+                        </div>
+                    `;
+                    
+                    faqItem.addEventListener('click', () => toggleFAQ(faqItem));
+                    faqContainer.appendChild(faqItem);
+                });
+            }
+        }
+        
+        // ==================== ФУНКЦИЯ FAQ ====================
+        function toggleFAQ(faqItem) {
+            const isActive = faqItem.classList.contains('active');
+            
+            // Закрываем все другие FAQ
+            document.querySelectorAll('.faq-item').forEach(item => {
+                if (item !== faqItem) {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Переключаем текущий FAQ
+            faqItem.classList.toggle('active');
+        }
+        
+        // ==================== ПЛАВНЫЙ СВАЙП НАВИГАЦИЯ ====================
+        function initSwipeNavigation() {
+            const swipeContainer = document.getElementById('swipeContainer');
+            if (!swipeContainer) return;
+            
+            // Touch events
+            swipeContainer.addEventListener('touchstart', touchStart);
+            swipeContainer.addEventListener('touchmove', touchMove);
+            swipeContainer.addEventListener('touchend', touchEnd);
+            
+            // Mouse events для тестирования на ПК
+            swipeContainer.addEventListener('mousedown', mouseDown);
+            swipeContainer.addEventListener('mousemove', mouseMove);
+            swipeContainer.addEventListener('mouseup', mouseEnd);
+            swipeContainer.addEventListener('mouseleave', mouseEnd);
+            
+            // Предотвращаем вертикальный скролл во время горизонтального свайпа
+            swipeContainer.addEventListener('touchmove', (e) => {
+                if (isSwiping) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Анимация
+            window.addEventListener('resize', setSliderPosition);
+            setSliderPosition();
+        }
+        
+        function touchStart(e) {
+            isSwiping = true;
+            startX = e.touches[0].clientX;
+            prevTranslate = currentTranslate;
+            cancelAnimationFrame(animationID);
+            velocity = 0;
+        }
+        
+        function touchMove(e) {
+            if (!isSwiping) return;
+            const currentX = e.touches[0].clientX;
+            const diff = currentX - startX;
+            velocity = diff - (currentTranslate - prevTranslate);
+            currentTranslate = prevTranslate + diff;
+            setSliderPosition();
+        }
+        
+        function touchEnd() {
+            if (!isSwiping) return;
+            isSwiping = false;
+            
+            const containerWidth = document.getElementById('swipeContainer').offsetWidth;
+            const threshold = containerWidth * 0.15;
+            
+            if (Math.abs(velocity) > 5 || Math.abs(currentTranslate - prevTranslate) > threshold) {
+                if (velocity > 0 || (currentTranslate - prevTranslate) > threshold) {
+                    // Свайп вправо - предыдущий раздел
+                    navigateToPrevSection();
+                } else {
+                    // Свайп влево - следующий раздел
+                    navigateToNextSection();
+                }
+            } else {
+                // Возвращаемся к текущему разделу
+                goToSection(currentSectionIndex);
+            }
+        }
+        
+        function mouseDown(e) {
+            isSwiping = true;
+            startX = e.clientX;
+            prevTranslate = currentTranslate;
+            cancelAnimationFrame(animationID);
+            velocity = 0;
+        }
+        
+        function mouseMove(e) {
+            if (!isSwiping) return;
+            const currentX = e.clientX;
+            const diff = currentX - startX;
+            velocity = diff - (currentTranslate - prevTranslate);
+            currentTranslate = prevTranslate + diff;
+            setSliderPosition();
+        }
+        
+        function mouseEnd() {
+            touchEnd();
+        }
+        
+        function setSliderPosition() {
+            const swipeContainer = document.getElementById('swipeContainer');
+            const sectionsWrapper = document.getElementById('sectionsWrapper');
+            if (!swipeContainer || !sectionsWrapper) return;
+            
+            const containerWidth = swipeContainer.offsetWidth;
+            const maxTranslate = -containerWidth * (sectionsOrder.length - 1);
+            
+            // Ограничиваем перемещение
+            if (currentTranslate > 0) currentTranslate = 0;
+            if (currentTranslate < maxTranslate) currentTranslate = maxTranslate;
+            
+            sectionsWrapper.style.transform = `translateX(${currentTranslate}px)`;
+            
+            if (!isSwiping) {
+                animationID = requestAnimationFrame(() => {
+                    if (Math.abs(velocity) > 0.5) {
+                        velocity *= 0.9;
+                        currentTranslate += velocity;
+                        setSliderPosition();
+                    }
+                });
+            }
+        }
+        
+        function goToSection(index) {
+            currentSectionIndex = index;
+            currentSection = sectionsOrder[index];
+            
+            const containerWidth = document.getElementById('swipeContainer').offsetWidth;
+            currentTranslate = -containerWidth * index;
+            
+            const sectionsWrapper = document.getElementById('sectionsWrapper');
+            if (sectionsWrapper) {
+                sectionsWrapper.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                sectionsWrapper.style.transform = `translateX(${currentTranslate}px)`;
+                
+                // Убираем transition после анимации
+                setTimeout(() => {
+                    sectionsWrapper.style.transition = '';
+                }, 400);
+            }
+            
+            updateNavButtons();
+            updatePageTitle();
+        }
+        
+        function navigateToNextSection() {
+            if (currentSectionIndex < sectionsOrder.length - 1) {
+                goToSection(currentSectionIndex + 1);
+            } else {
+                // Эффект "отскока" при достижении конца
+                const containerWidth = document.getElementById('swipeContainer').offsetWidth;
+                currentTranslate = -containerWidth * currentSectionIndex;
+                setSliderPosition();
+            }
+        }
+        
+        function navigateToPrevSection() {
+            if (currentSectionIndex > 0) {
+                goToSection(currentSectionIndex - 1);
+            } else {
+                // Эффект "отскока" при достижении начала
+                currentTranslate = 0;
+                setSliderPosition();
+            }
+        }
+        
+        function showSection(sectionId) {
+            const index = sectionsOrder.indexOf(sectionId);
+            if (index !== -1 && index !== currentSectionIndex) {
+                goToSection(index);
+            }
+        }
+        
+        function updateNavButtons() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.section === currentSection) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        
+        function updatePageTitle() {
+            const titles = {
+                'stats': 'Главная',
+                'functions': 'Функции',
+                'sponsors': 'Партнеры',
+                'profile': 'Профиль',
+                'help': 'Помощь'
+            };
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle) {
+                pageTitle.textContent = titles[currentSection] || 'Fides Deal';
+            }
+        }
+        
+        // ==================== ЗАГРУЗКА ПРОФИЛЯ ====================
+        function loadUserProfile() {
+            if (telegramUser) {
+                loadProfileFromTelegram();
+            } else {
+                loadDemoProfile();
+            }
+        }
+        
+        function loadProfileFromTelegram() {
+            const firstName = telegramUser?.first_name || 'Пользователь';
+            const username = telegramUser?.username || '';
+            const photoUrl = telegramUser?.photo_url || '';
+            
+            let displayName = firstName;
+            if (!firstName && username) displayName = '@' + username;
+            
+            const userName = document.getElementById('userName');
+            const userId = document.getElementById('userId');
+            const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+            
+            if (userName) userName.textContent = displayName;
+            if (userId) userId.textContent = `ID: ${telegramUser?.id || '000000'}`;
+            
+            if (avatarPlaceholder) {
+                if (photoUrl) {
+                    avatarPlaceholder.innerHTML = `<img src="${photoUrl}" alt="${displayName}" style="width:100%;height:100%;object-fit:cover;">`;
+                } else {
+                    const firstLetter = firstName.charAt(0).toUpperCase() || 'U';
+                    avatarPlaceholder.textContent = firstLetter;
+                }
+            }
+        }
+        
+        function loadDemoProfile() {
+            const demoUser = {
+                name: 'Александр',
+                id: '123456789',
+                firstLetter: 'А'
+            };
+            
+            const userName = document.getElementById('userName');
+            const userId = document.getElementById('userId');
+            const avatarPlaceholder = document.getElementById('avatarPlaceholder');
+            
+            if (userName) userName.textContent = demoUser.name;
+            if (userId) userId.textContent = `ID: ${demoUser.id}`;
+            if (avatarPlaceholder) avatarPlaceholder.textContent = demoUser.firstLetter;
+        }
+        
+        function loadProfileData() {
+            const userInfoGrid = document.getElementById('userInfoGrid');
+            if (!userInfoGrid) return;
+            
+            // Без фамилии
+            const infoItems = [
+                { icon: 'user', label: 'Имя', value: telegramUser?.first_name || 'Александр' },
+                { icon: 'at', label: 'Username', value: telegramUser?.username ? '@' + telegramUser.username : '@alex' },
+                { icon: 'id-card', label: 'Telegram ID', value: telegramUser?.id || '123456789' },
+                { icon: 'calendar-plus', label: 'В Telegram с', value: '01.01.2023' },
+                { icon: 'language', label: 'Язык', value: 'Русский' },
+                { icon: 'clock', label: 'Статус', value: 'В сети' }
+            ];
+            
+            userInfoGrid.innerHTML = '';
+            infoItems.forEach(info => {
+                const infoItem = document.createElement('div');
+                infoItem.className = 'info-item';
+                infoItem.innerHTML = `
+                    <div class="info-icon">
+                        <i class="fas fa-${info.icon}"></i>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-label">${info.label}</div>
+                        <div class="info-value">${info.value}</div>
+                    </div>
+                `;
+                userInfoGrid.appendChild(infoItem);
+            });
+        }
+        
+        // ==================== ОНЛАЙН СЧЕТЧИК ====================
+        function startOnlineCounter() {
+            updateOnlineCount();
+            if (onlineInterval) clearInterval(onlineInterval);
+            onlineInterval = setInterval(updateOnlineCount, 300000);
+            startOnlineTimer();
+        }
+        
+        function updateOnlineCount() {
+            const min = 8000;
+            const max = 12000;
+            const change = Math.floor(Math.random() * 1000) - 500;
+            onlineCount = Math.max(min, Math.min(max, onlineCount + change));
+            
+            const formattedCount = onlineCount.toLocaleString();
+            const onlineElement = document.getElementById('onlineCount');
+            
+            if (onlineElement) {
+                onlineElement.style.opacity = '0.7';
+                setTimeout(() => {
+                    onlineElement.textContent = formattedCount;
+                    onlineElement.style.opacity = '1';
+                }, 200);
+            }
+            
+            onlineUpdateTimer = 300;
+        }
+        
+        function startOnlineTimer() {
+            setInterval(() => {
+                onlineUpdateTimer--;
+                if (onlineUpdateTimer <= 0) {
+                    onlineUpdateTimer = 300;
+                    updateOnlineCount();
+                }
+                updateOnlineTimer();
+            }, 1000);
+        }
+        
+        function updateOnlineTimer() {
+            const minutes = Math.floor(onlineUpdateTimer / 60);
+            const seconds = onlineUpdateTimer % 60;
+            const timerElement = document.getElementById('onlineTimer');
+            
+            if (timerElement) {
+                timerElement.textContent = `Обновление через: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (onlineUpdateTimer < 60) {
+                    timerElement.style.color = '#ffaa00';
+                } else {
+                    timerElement.style.color = 'rgba(255, 255, 255, 0.7)';
+                }
+            }
+        }
+        
+        // ==================== ТЕМА И УВЕДОМЛЕНИЯ ====================
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (!themeToggle) return;
+            
+            if (isDarkTheme) {
+                document.body.classList.remove('light-theme');
+                document.body.classList.add('dark-theme');
+                themeToggle.classList.remove('active');
+                showAlert('Темная тема включена', 'success');
+            } else {
+                document.body.classList.remove('dark-theme');
+                document.body.classList.add('light-theme');
+                themeToggle.classList.add('active');
+                showAlert('Светлая тема включена', 'success');
+            }
+        }
+        
+        function toggleNotifications() {
+            notificationsEnabled = !notificationsEnabled;
+            const notificationsToggle = document.getElementById('notificationsToggle');
+            
+            if (!notificationsToggle) return;
+            
+            if (notificationsEnabled) {
+                notificationsToggle.classList.add('active');
+                showAlert('Уведомления включены', 'success');
+            } else {
+                notificationsToggle.classList.remove('active');
+                showAlert('Уведомления отключены', 'info');
+            }
+        }
+        
+        // ==================== МЕНЮ ====================
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            if (menu) {
+                menu.classList.toggle('active');
+            }
+        }
+        
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('dropdownMenu');
+            const menuBtn = document.querySelector('.menu-btn');
+            
+            if (!menu || !menuBtn) return;
+            
+            if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
+                menu.classList.remove('active');
+            }
+        });
+        
+        function refreshPage() {
+            showAlert('Обновляем данные...', 'info');
+            loadUserProfile();
+            loadProfileData();
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.remove('active');
+            }
+        }
+        
+        function openBot() {
+            const botUrl = 'https://t.me/FidesDealBot';
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.openLink(botUrl);
+            } else {
+                window.open(botUrl, '_blank');
+            }
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.remove('active');
+            }
+        }
+        
+        function openOTC() {
+            const otcUrl = 'https://t.me/FidesDealBot?start=otc';
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.openLink(otcUrl);
+            } else {
+                window.open(otcUrl, '_blank');
+            }
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.remove('active');
+            }
+        }
+        
+        function openChannel() {
+            const channelUrl = 'https://t.me/FidesNews';
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.openLink(channelUrl);
+            } else {
+                window.open(channelUrl, '_blank');
+            }
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.remove('active');
+            }
+        }
+        
+        function openSupport() {
+            const supportUrl = 'https://t.me/FidesDeal';
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.openLink(supportUrl);
+            } else {
+                window.open(supportUrl, '_blank');
+            }
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.remove('active');
+            }
+        }
+        
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+        function setupEventListeners() {
+            // Клавиатурная навигация для тестирования
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') {
+                    navigateToPrevSection();
+                } else if (e.key === 'ArrowRight') {
+                    navigateToNextSection();
+                }
+            });
+            
+            // Предотвращаем вертикальный скролл при горизонтальном свайпе
+            let touchStartY = 0;
+            let touchStartX = 0;
+            
+            document.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+                touchStartX = e.touches[0].clientX;
+            }, { passive: true });
+        }
+        
+        function showAlert(message, type) {
+            const alert = document.createElement('div');
+            alert.textContent = message;
+            alert.style.cssText = `
+                position: fixed;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${type === 'success' ? 'rgba(0,255,136,0.9)' : 
+                            type === 'error' ? 'rgba(255,85,85,0.9)' : 
+                            type === 'info' ? 'rgba(43,107,226,0.9)' :
+                            'rgba(0,255,136,0.9)'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 10px;
+                z-index: 9999;
+                font-weight: bold;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                text-align: center;
+                max-width: 80%;
+                word-break: break-word;
+            `;
+            
+            document.body.appendChild(alert);
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        }
+        
+        function closeApp() {
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.close();
+            } else {
+                showAlert('Приложение закрыто (демо-режим)', 'info');
+            }
+        }
+        
+        // Отключаем консоль в продакшене
+        if (window.console && window.location.hostname !== 'localhost') {
+            console.log = function(){};
+            console.warn = function(){};
+            console.error = function(){};
+        }
+        
+        // Гарантируем скрытие экрана загрузки при любых ошибках
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loadingScreen');
+                const appContainer = document.getElementById('appContainer');
+                
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                        if (appContainer) {
+                            appContainer.classList.add('show');
+                        }
+                    }, 500);
+                } else if (appContainer) {
+                    appContainer.classList.add('show');
+                }
+            }, 2000);
+        });
+    </script>
+    
+    <!-- Стиль для точки онлайн -->
+    <style>
+        .online-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+        
+        @keyframes pulse-dot {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+        }
+    </style>
+</body>
+  </html>
